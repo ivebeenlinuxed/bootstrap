@@ -66,7 +66,37 @@
     }
 
   , lookup: function (event) {
-      var that = this
+	  if (this.options.ajax == true) {
+		  this.ajaxLookup(event);
+	  } else {
+		  this.staticLookup(event);
+	  }
+    },
+    
+    ajaxLookup: function(event) {
+		this.query = this.$element.val();
+		if (this.ajax != false) {
+			this.ajax.stop();
+		}
+    	this.ajax = $.ajax({
+    		url: this.options.source+"?q=".encodeURIComponent(this.query),
+    		dataType: "json",
+    		context: this,
+    		success: function(items) {
+    			this.ajax = false;
+    			items = this.sorter(items);
+    			
+    			if (!items.length) {
+    				return this.shown ? this.hide() : this;9
+    			}
+
+    			return this.render(items.slice(0, this.options.items)).show();
+    		}
+    	});
+    },
+    
+    staticLookup: function(event) {
+    	var that = this
         , items
         , q
 
@@ -234,7 +264,7 @@
 
 
   /* TYPEAHEAD PLUGIN DEFINITION
-   * =========================== */
+ * =========================== */
 
   $.fn.typeahead = function ( option ) {
     return this.each(function () {
